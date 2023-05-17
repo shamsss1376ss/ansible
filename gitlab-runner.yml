@@ -1,0 +1,34 @@
+---
+- name: Install GitLab Runner on Ubuntu
+  hosts: gitlab-runner
+  become: yes
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - curl
+        - apt-transport-https
+        - ca-certificates
+
+    - name: Add GitLab's official repository
+      apt_repository:
+        repo: deb https://packages.gitlab.com/runner/gitlab-runner/ubuntu/ focal main
+        state: present
+
+    - name: Import GitLab's GPG key
+      shell: |
+        curl -L https://packages.gitlab.com/runner/gitlab-runner/gpgkey | sudo apt-key add -
+
+    - name: Install GitLab Runner
+      apt:
+        name: gitlab-runner
+        update_cache: yes
+        state: latest
+
